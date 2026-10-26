@@ -5,7 +5,7 @@ owner: mohsenbostan
 why: Nothing gates a merge unless a human has approved it and it is still current.
 level: L2
 status: draft
-version: 1
+version: 2
 ---
 
 # Lint: approval (I008, I009, I010)
@@ -23,14 +23,15 @@ version: 1
   verify: [example]
   severity: critical
 
-- id: open-questions-block-approval
-  given: an approved intent whose Open questions section has text other than HTML comments
+- id: no-open-questions
+  given: an intent with an Open questions section, in any status and with any content
   when: lint runs
-  then: it exits 1 and reports I009
+  then: it exits 1 and reports I009 telling the author to ask the user and record the answer as a rule
   examples:
     - { status: approved, open_questions: "Do refunds need approval?", expected: I009 }
-    - { status: draft, open_questions: "Do refunds need approval?", expected: none }
-    - { status: approved, open_questions: "<!-- none -->", expected: none }
+    - { status: draft, open_questions: "Do refunds need approval?", expected: I009 }
+    - { status: draft, open_questions: "(empty section)", expected: I009 }
+    - { status: draft, open_questions: "(no such section)", expected: none }
   verify: [example]
   severity: critical
 

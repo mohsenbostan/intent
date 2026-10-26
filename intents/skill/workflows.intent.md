@@ -5,7 +5,7 @@ owner: mohsenbostan
 why: The agent following the skill keeps the separation of authority that makes the checks trustworthy.
 level: L2
 status: draft
-version: 1
+version: 2
 expires: 2027-04-26
 ---
 
@@ -20,6 +20,15 @@ mechanically.
 
 ## Behaviour
 ```yaml
+- id: asks-instead-of-open-questions
+  given: an undecided point while the agent drafts or changes an intent, a check, code or a document
+  when: the agent follows any workflow
+  then: it stops, asks the user for an explicit answer, and writes the answer as a rule; it never records an open question, to-do or to-be-decided note anywhere
+  verify: [manual]
+  severity: critical
+  examples:
+    - { undecided: "which intents the gate runs", agent_writes_open_question: false, agent_asks_user: true }
+
 - id: never-self-approves
   given: an intent ready for review
   when: the agent runs the review workflow

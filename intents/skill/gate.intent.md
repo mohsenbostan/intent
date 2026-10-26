@@ -5,14 +5,16 @@ owner: mohsenbostan
 why: Code merges only when every approved Intent it could affect is verified by its pinned checks.
 level: L2
 status: draft
-version: 1
+version: 2
 ---
 
 # Merge gate
 
 ## Context
 Implements the merge gate of spec A7. Runs in CI on every pull request,
-against the PR's base branch.
+against the PR's base branch. A code change does not say which intents it
+touches, so the owner decided (2026-10-26) that the gate verifies every
+approved intent on every change.
 
 ## Behaviour
 ```yaml
@@ -67,6 +69,15 @@ against the PR's base branch.
   verify: [example]
   severity: major
 
+- id: checks-every-approved-intent
+  given: approved intents whose files and checks are untouched by the change
+  when: the gate runs
+  then: their checks run too, so every approved intent is verified on every change
+  examples:
+    - { approved_intents: 3, intents_changed: 0, code_changed: true, expected_intents_run: 3 }
+  verify: [example]
+  severity: critical
+
 - id: unknown-base
   given: a base ref that does not exist
   when: the gate runs
@@ -74,9 +85,3 @@ against the PR's base branch.
   verify: [example]
   severity: minor
 ```
-
-## Open questions
-Spec A7 says checks of approved intents "touched by the change" must pass, but a
-code change does not say which intents it touches. Proposal: the gate runs the
-checks of every approved intent until a code-to-intent mapping exists. Slower,
-never misses one.

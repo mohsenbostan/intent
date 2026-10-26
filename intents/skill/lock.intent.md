@@ -5,14 +5,15 @@ owner: mohsenbostan
 why: A check only counts as verification if it is exactly the check a human reviewed, for exactly the rule they approved.
 level: L2
 status: draft
-version: 1
+version: 2
 ---
 
 # Pinned checks (lock)
 
 ## Context
 Implements spec A2.4 (determinism after generation) and the pinning step of A7.
-Check file naming and the lock format are in `interface/cli.md`.
+Check file naming and the lock format are in `interface/cli.md`. The owner
+decided (2026-10-26) that every file under `checks/` is pinned, helpers included.
 
 ## Behaviour
 ```yaml
@@ -70,6 +71,17 @@ Check file naming and the lock format are in `interface/cli.md`.
   verify: [example]
   severity: major
 
+- id: helpers-are-pinned
+  given: a helper file under the checks folder (a fixture, conftest or shared utility) that is edited, added or deleted after pinning
+  when: lock check runs
+  then: it exits 1 naming the file, so a helper can never silently change what a pinned check does
+  examples:
+    - { change: "edit a pinned conftest", expected_exit: 1 }
+    - { change: "add a new fixture file", expected_exit: 1 }
+    - { change: "add a file git ignores, such as a bytecode cache", expected_exit: 0 }
+  verify: [example]
+  severity: critical
+
 - id: line-endings-do-not-matter
   given: a pinned check file whose line endings change between LF and CRLF with no other change
   when: lock check runs
@@ -79,9 +91,3 @@ Check file naming and the lock format are in `interface/cli.md`.
   verify: [example]
   severity: minor
 ```
-
-## Open questions
-Should helper files in `checks/` (fixtures, conftest, shared utilities) be pinned too?
-Proposal: yes, hash every file under an intent's check folder, so a helper change
-cannot silently change what a pinned check does. The current contract pins only
-files named `<rule-id>.<adapter>.*`.

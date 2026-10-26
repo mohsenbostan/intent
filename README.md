@@ -9,11 +9,16 @@ holds the specification and a Claude Code skill that implements it.
 This repository is built **with Intents, from the beginning**. The skill's own
 requirements are written as Intents and approved before any of its code exists.
 
+**No open questions, ever (spec A2.7).** Nothing undecided is written down: not in
+an Intent, a check, code, a comment, a document or a commit message. An agent that
+meets an undecided point asks the user and records the answer as a rule. Lint
+rejects any `## Open questions` section (I009).
+
 ## Where this is in the lifecycle (spec A7)
 
 | Step | | Status |
 |---|---|---|
-| 1. Draft Intents | `intents/` | ✅ 13 intents, 58 rules |
+| 1. Draft Intents | `intents/` | ✅ 13 intents, 62 rules |
 | 2. Lint | | ✅ clean (bootstrap linter) |
 | 3. Review & approve | human | ⏳ **awaiting review** |
 | 4. Generate checks | isolated agent, sees `intents/` + `interface/` only | — |
@@ -25,7 +30,7 @@ requirements are written as Intents and approved before any of its code exists.
 ## Layout
 
 ```
-spec/intents-spec-and-skill-prompt.md   the Intent Specification v0.1 (Part A) + skill prompt (Part B)
+spec/intents-spec-and-skill-prompt.md   the Intent Specification v0.2 (Part A) + skill prompt (Part B)
 interface/cli.md                        public interface of the skill's scripts (what checks may rely on)
 intents/                                this repo's own Intents
   _index.yaml                           adapters and change budget
@@ -36,7 +41,7 @@ intents/                                this repo's own Intents
 
 ## Bootstrap notes
 
-- The first commit adds 58 rules, over the default change budget of 10. It is the
+- The first commit added 58 rules, over the default change budget of 10. It is the
   bootstrap commit, so the change budget does not apply; later PRs use the
   `intents-change-budget-override` label when they must exceed it.
 - The linter used for step 2 is a draft kept outside the repo. The real one is

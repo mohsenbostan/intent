@@ -1,13 +1,15 @@
-# Intents — Specification v0.1 + Claude Code Skill Prompt
+# Intents — Specification v0.2 + Claude Code Skill Prompt
 
 This file has two parts:
 
 1. **Part A — The Intent Specification.** The format and rules.
 2. **Part B — Claude Code prompt.** Paste it into Claude Code (or give it this whole file) to generate an `intents` Skill that implements Part A.
 
+**Changes in v0.2:** new principle A2.7 *No open questions*. The `## Open questions` section is removed from A4.2, and I009 now rejects it in any status.
+
 ---
 
-# Part A — Intent Specification v0.1
+# Part A — Intent Specification v0.2
 
 ## A1. Purpose
 
@@ -23,6 +25,7 @@ An **Intent** is a human-owned, machine-verifiable statement of an outcome the s
 4. **Determinism after generation.** AI is non-deterministic once, when generating checks. Checks are then pinned, reviewed, versioned, and run deterministically.
 5. **Every Intent has an owner and a why.** No orphan Intents.
 6. **Humans read diffs, not the whole tree.** Scale comes from hierarchy and change budgets.
+7. **No open questions.** Nothing undecided is ever written down: not in an Intent, a check, code, a comment, a document or a commit message. An agent that meets an undecided point stops and asks the user for an explicit answer, then records that answer as a rule.
 
 ## A3. Repository layout
 
@@ -77,7 +80,8 @@ All sections optional except `Behaviour` (at least one of `Behaviour`, `Budgets`
 | `## Budgets` | YAML map of non-functional limits (A4.4). |
 | `## Policies` | YAML list of invariants that must always hold (A4.5). |
 | `## Out of scope` | YAML list of strings or Intent ids. Stops agents wandering. |
-| `## Open questions` | Free prose. Any content here blocks `status: approved`. |
+
+There is no `## Open questions` section. Undecided points are resolved with the user before anything is written (A2.7).
 
 ### A4.3 Behaviour rule
 
@@ -204,7 +208,7 @@ Requirement
 | I006 | `severity: critical` rules have `examples`. |
 | I007 | Child budgets only tighten; child policies don't override parent. |
 | I008 | `approved` + level ≤ L2 has `reviewed_by` and `reviewed_at`. |
-| I009 | `## Open questions` non-empty blocks `approved`. |
+| I009 | Any `## Open questions` section → error, in every status (A2.7). |
 | I010 | `expires` in the past → error. |
 | I011 | Implementation-leak heuristics in `given/when/then` (class/function names, file paths, library names) → warning. |
 | I012 | `manual` adapter without owner + expiry → error. |
@@ -320,7 +324,9 @@ code and the agent that writes checks.
 - Keep SKILL.md under ~250 lines; push detail into reference/.
 - Define these workflows as clear numbered procedures:
   1. `new`      – draft an Intent from a requirement. Ask for owner and `why`
-                  if missing. Apply the swap test (A2.2). Start as draft.
+                  if missing. Ask the user about every undecided point and
+                  write the answer as a rule; never record open questions
+                  (A2.7). Apply the swap test (A2.2). Start as draft.
   2. `lint`     – run scripts/lint.py; explain each failure in one line.
   3. `review`   – run scripts/diff.py; present the rule-level diff and
                   reference/review-checklist.md. Never mark approved yourself;
@@ -340,7 +346,8 @@ code and the agent that writes checks.
   8. `prune`    – list orphaned, expired, unverified or duplicate Intents
                   (A9). Propose deletions; never delete without confirmation.
 - Include a short "Hard rules" section: separation of authority, no
-  implementation details in Intents, humans approve L0–L2, checks are pinned.
+  implementation details in Intents, humans approve L0–L2, checks are pinned,
+  no open questions anywhere (ask the user and record the answer, A2.7).
 
 ## Script requirements
 - Python 3.10+, stdlib + PyYAML only.

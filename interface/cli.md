@@ -31,8 +31,8 @@ A malformed *intent file* is a lint violation (I001, exit 1), not a parse error.
 
 Per spec A3/A4: `intents/**/<name>.intent.md` and `intents/**/_intent.md`.
 Tooling reads the front matter plus the first fenced `yaml` block under each of
-`## Behaviour`, `## Budgets`, `## Policies`, `## Out of scope`, and the text of
-`## Open questions` (HTML comments ignored). Everything else is prose.
+`## Behaviour`, `## Budgets`, `## Policies`, `## Out of scope`, and whether a
+`## Open questions` heading exists at all (spec A2.7). Everything else is prose.
 
 ### `intents/_index.yaml` (optional)
 
@@ -68,11 +68,16 @@ Example: `checks/checkout/payment/authorize/no-double-charge.property.test.ts`
 is a `property` check for `checkout.payment.authorize#no-double-charge`.
 
 Files in `checks/` whose second dot-separated name segment is not a known
-adapter are helpers. They are never treated as checks.
+adapter are **helpers** (fixtures, conftest, shared utilities). They are never
+run as checks, but they are pinned like checks.
+
+The files under `checks/` are the ones git tracks or would track (untracked
+but not ignored), so caches such as `__pycache__/` never count.
 
 ### `checks/checks.lock`
 
-JSON, written only by `lock.py write`:
+JSON, written only by `lock.py write`. Hashes are sha256, with CRLF normalised
+to LF for files:
 
 ```json
 {
@@ -80,9 +85,10 @@ JSON, written only by `lock.py write`:
   "rules": {
     "<intent-id>#<rule-id>": {
       "rule_hash": "<sha256 of the canonicalised rule>",
-      "checks": { "<repo-relative check path>": "<sha256 of file, CRLF normalised to LF>" }
+      "checks": { "<repo-relative check path>": "<sha256 of file>" }
     }
-  }
+  },
+  "helpers": { "<repo-relative helper path>": "<sha256 of file>" }
 }
 ```
 
@@ -126,11 +132,12 @@ use the path `intents/`.
 lock.py [check|write] [--root DIR] [--json]      # default: check
 ```
 
-- `write` pins the current state of every rule of every `approved` intent and its
-  check files into `checks/checks.lock`. Exit 0.
+- `write` pins the current state of every rule of every `approved` intent, its
+  check files, and every helper file into `checks/checks.lock`. Exit 0.
 - `check` compares the working tree with the lock. Exit 1 on any problem.
+- Both need a git repository to list files under `checks/`. Outside one they exit 2.
 
-`check` JSON:
+`check` JSON (`rule` is `null` for helper problems, which name the file in `message`):
 
 ```json
 { "ok": false, "problems": [ { "rule": "<intent-id>#<rule-id>", "message": "..." } ] }
@@ -186,8 +193,8 @@ Runs the merge gate (spec A7) and exits 1 if any part fails:
 3. The files changed since the merge base of `REF` and `HEAD` (committed,
    uncommitted and untracked) do not include both `intents/` or `checks/` paths
    and other paths, unless `mixed_change_label` is passed with `--label`.
-4. For every `approved` intent, the checks of each adapter run with that
-   adapter's `run` command and exit 0. Adapters with `run_in_gate: false` are
+4. For every `approved` intent, whatever files changed, the checks of each
+   adapter run with that adapter's `run` command and exit 0. Adapters with `run_in_gate: false` are
    reported as skipped. A check whose adapter has no `run` command fails.
 
 JSON:

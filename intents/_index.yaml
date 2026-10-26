@@ -1,0 +1,23 @@
+# Configuration for this repository's own Intents (the intents skill, dogfooded).
+owners:
+  mohsenbostan: "https://github.com/mohsenbostan"
+
+change_budget:
+  max_added_rules: 10
+  max_changed_rules: 20
+  override_label: intents-change-budget-override
+
+mixed_change_label: intents-mixed-change
+
+# Checks are pytest files named <rule-id>.<adapter>.test.py under checks/.
+adapters:
+  example:
+    run: "python -m pytest -q -p no:cacheprovider --import-mode=importlib {files}"
+  contract:
+    run: "python -m pytest -q -p no:cacheprovider --import-mode=importlib {files}"
+  static:
+    run: "python -m pytest -q -p no:cacheprovider --import-mode=importlib {files}"
+  load:
+    run: "python -m pytest -q -p no:cacheprovider --import-mode=importlib {files}"
+  manual:
+    run_in_gate: false
